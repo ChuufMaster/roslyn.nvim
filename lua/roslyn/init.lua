@@ -1,6 +1,7 @@
 local server = require("roslyn.server")
 local utils = require("roslyn.slnutils")
 local commands = require("roslyn.commands")
+local server_updater = require("roslyn.server_updater")
 
 ---@param buf number
 ---@return boolean
@@ -252,6 +253,8 @@ function M.setup(config)
     vim.treesitter.language.register("c_sharp", "csharp")
     commands.create_roslyn_commands()
 
+    local data_path = vim.fn.stdpath("data") --[[@as string]]
+
     ---@type InternalRoslynNvimConfig
     local default_config = {
         filewatching = true,
@@ -261,10 +264,16 @@ function M.setup(config)
         config = {},
         choose_sln = nil,
         broad_search = false,
+        system_type = "linux-x64",
+        debug = false,
+        server_download_path = vim.fs.joinpath(data_path, "roslyn"),
     }
 
     local roslyn_config = vim.tbl_deep_extend("force", default_config, config or {})
     roslyn_config.config.capabilities = get_extendend_capabilities(roslyn_config)
+    server_updater.system_type = roslyn_config.system_type
+    server_updater.debug = roslyn_config.debug
+    server_updater.roslyn_path = roslyn_config.server_download_path
 
     local cmd = get_cmd(roslyn_config.exe, roslyn_config.args)
 

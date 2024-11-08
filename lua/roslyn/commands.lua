@@ -1,3 +1,4 @@
+local server_updater = require("roslyn.server_updater")
 -- Huge credits to mrcjkb
 -- https://github.com/mrcjkb/rustaceanvim/blob/2fa45427c01ded4d3ecca72e357f8a60fd8e46d4/lua/rustaceanvim/commands/init.lua
 local M = {}
@@ -47,6 +48,29 @@ local subcommand_tbl = {
             end
 
             client.stop(true)
+        end,
+    },
+    download = {
+        impl = function()
+            if not server_updater.check_if_newer_versoin() then
+                vim.print("No newer versions available")
+                return
+            end
+            vim.print("Updating Roslyn Server")
+
+            vim.cmd("Roslyn stop")
+            server_updater.download_language_server()
+            vim.cmd("Roslyn restart")
+        end,
+    },
+    localVersion = {
+        impl = function()
+            vim.print(server_updater.local_version)
+        end,
+    },
+    onlineVersion = {
+        impl = function()
+            vim.print(server_updater.online_version)
         end,
     },
 }
